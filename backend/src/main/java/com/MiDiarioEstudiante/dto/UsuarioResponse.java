@@ -1,26 +1,24 @@
-package com.MiDiarioEstudiante.model;
+package com.MiDiarioEstudiante.dto;
+
+import com.MiDiarioEstudiante.model.Usuario;
 
 import java.time.LocalDateTime;
 
-public class Usuario {
+public class UsuarioResponse {
     private Long id;
     private String nombre;
     private String email;
-    private String password;
     private String biografia;
     private LocalDateTime fechaRegistro;
 
-    public Usuario() {
-        this.fechaRegistro = LocalDateTime.now();
-    }
-
-    public Usuario(Long id, String nombre, String email, String password, String biografia, LocalDateTime fechaRegistro) {
-        this.id = id;
-        this.nombre = nombre;
-        this.email = email;
-        this.password = password;
-        this.biografia = biografia;
-        this.fechaRegistro = fechaRegistro != null ? fechaRegistro : LocalDateTime.now();
+    public static UsuarioResponse from(Usuario usuario) {
+        UsuarioResponse response = new UsuarioResponse();
+        response.setId(usuario.getId());
+        response.setNombre(usuario.getNombre());
+        response.setEmail(usuario.getEmail());
+        response.setBiografia(usuario.getBiografia());
+        response.setFechaRegistro(usuario.getFechaRegistro());
+        return response;
     }
 
     public Long getId() {
@@ -47,14 +45,6 @@ public class Usuario {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public String getBiografia() {
         return biografia;
     }
@@ -64,9 +54,6 @@ public class Usuario {
     }
 
     public LocalDateTime getFechaRegistro() {
-        if (fechaRegistro == null) {
-            fechaRegistro = LocalDateTime.now();
-        }
         return fechaRegistro;
     }
 

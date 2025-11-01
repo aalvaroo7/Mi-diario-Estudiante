@@ -1,4 +1,7 @@
 package com.MiDiarioEstudiante.model.enums;
 
-public class TipoReaccion {
+public enum TipoReaccion {
+    ME_GUSTA,
+    ME_ENCANTA,
+    ME_APOYA
 }

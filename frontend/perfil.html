@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil | Mi Diario Estudiantil</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/perfil.css">
+    <script src="js/mian.js" defer></script>
+    <script src="js/perfil.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+    <div class="topbar__brand">Mi Diario Estudiantil</div>
+    <nav class="topbar__nav">
+        <a href="index.html">Inicio</a>
+        <a href="muro.html" data-auth="required">Muro</a>
+        <a href="perfil.html" class="is-active" data-auth="required">Perfil</a>
+        <button id="logoutButton" class="btn btn--ghost" hidden>Salir</button>
+    </nav>
+</header>
+<main class="perfil-layout">
+    <section class="perfil-card card">
+        <header>
+            <h1 id="perfilNombre">Mi perfil</h1>
+            <p class="perfil-card__email" id="perfilEmail"></p>
+        </header>
+        <form id="perfilForm" class="form">
+            <label for="perfilNombreInput">Nombre</label>
+            <input id="perfilNombreInput" name="nombre" type="text" required>
+
+            <label for="perfilBiografiaInput">Biografía</label>
+            <textarea id="perfilBiografiaInput" name="biografia" rows="4"></textarea>
+
+            <label for="perfilPasswordInput">Cambiar contraseña</label>
+            <input id="perfilPasswordInput" name="password" type="password" placeholder="(Opcional)">
+
+            <button type="submit" class="btn">Guardar cambios</button>
+            <span id="perfilMessage" class="form__message" role="alert" hidden></span>
+        </form>
+    </section>
+    <section class="notificaciones card">
+        <h2>Notificaciones</h2>
+        <p id="notificacionesEmpty" class="empty-state">No tienes notificaciones nuevas.</p>
+        <ul id="notificacionesLista" class="notificaciones__lista"></ul>
+    </section>
+</main>
+</body>
+</html>
