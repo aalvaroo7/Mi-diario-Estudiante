@@ -28,3 +28,4 @@
 ### Un diagrama de secuencia
 
 - Es una representación gráfica de la interacción entre objetos en el tiempo
+
