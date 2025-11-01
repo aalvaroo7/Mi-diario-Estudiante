@@ -1,4 +1,7 @@
 package com.MiDiarioEstudiante.model.enums;
 
-public class TipoNotificacion {
+public enum TipoNotificacion {
+    GENERAL,
+    COMENTARIO,
+    REACCION
 }

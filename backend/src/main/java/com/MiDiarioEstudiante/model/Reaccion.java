@@ -1,23 +1,26 @@
 package com.MiDiarioEstudiante.model;
 
+import com.MiDiarioEstudiante.model.enums.TipoReaccion;
+
 import java.time.LocalDateTime;
 
-public class Comentario {
+public class Reaccion {
     private Long id;
     private Long publicacionId;
     private Long usuarioId;
-    private String contenido;
+    private TipoReaccion tipo;
     private LocalDateTime fechaCreacion;
 
-    public Comentario() {
+    public Reaccion() {
         this.fechaCreacion = LocalDateTime.now();
+        this.tipo = TipoReaccion.ME_GUSTA;
     }
 
-    public Comentario(Long id, Long publicacionId, Long usuarioId, String contenido, LocalDateTime fechaCreacion) {
+    public Reaccion(Long id, Long publicacionId, Long usuarioId, TipoReaccion tipo, LocalDateTime fechaCreacion) {
         this.id = id;
         this.publicacionId = publicacionId;
         this.usuarioId = usuarioId;
-        this.contenido = contenido;
+        this.tipo = tipo != null ? tipo : TipoReaccion.ME_GUSTA;
         this.fechaCreacion = fechaCreacion != null ? fechaCreacion : LocalDateTime.now();
     }
 
@@ -45,12 +48,15 @@ public class Comentario {
         this.usuarioId = usuarioId;
     }
 
-    public String getContenido() {
-        return contenido;
+    public TipoReaccion getTipo() {
+        if (tipo == null) {
+            tipo = TipoReaccion.ME_GUSTA;
+        }
+        return tipo;
     }
 
-    public void setContenido(String contenido) {
-        this.contenido = contenido;
+    public void setTipo(TipoReaccion tipo) {
+        this.tipo = tipo;
     }
 
     public LocalDateTime getFechaCreacion() {
