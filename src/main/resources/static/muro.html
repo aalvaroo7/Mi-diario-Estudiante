@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Blog</title>
+    <link rel="stylesheet" href="../css/muro.css">
+</head>
+<body>
+<header>
+    <h1>Bienvenido a tu blog</h1>
+    <button id="logout">Cerrar sesión</button>
+</header>
+
+<main>
+    <p>Has iniciado sesión correctamente 🎉</p>
+</main>
+
+<script src="../js/muro.js"></script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muro | Mi Diario Estudiantil</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/muro.css">
+    <script src="../js/main.js" defer></script>
+    <script src="../js/muro.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+    <div class="topbar__brand">Mi Diario Estudiantil</div>
+    <nav class="topbar__nav">
+        <a href="index.html">Inicio</a>
+        <a href="muro.html" class="is-active" data-auth="required">Muro</a>
+        <a href="perfil.html" data-auth="required">Perfil</a>
+        <button id="logoutButton" class="btn btn--ghost" hidden>Salir</button>
+    </nav>
+</header>
+<main class="layout">
+    <section class="composer card">
+        <h1>Comparte algo nuevo</h1>
+        <form id="postForm" class="form">
+            <textarea id="postContent" name="contenido" rows="4" placeholder="¿Qué deseas compartir hoy?" required></textarea>
+            <div class="composer__actions">
+                <button type="submit" class="btn">Publicar</button>
+                <span id="postMessage" class="form__message" role="alert" hidden></span>
+            </div>
+        </form>
+    </section>
+    <section class="feed" aria-live="polite">
+        <h2>Últimas publicaciones</h2>
+        <div id="feedContainer" class="feed__list"></div>
+    </section>
+</main>
+<template id="commentTemplate">
+    <article class="comment">
+        <header class="comment__header">
+            <span class="comment__author"></span>
+            <time class="comment__time" datetime=""></time>
+        </header>
+        <p class="comment__content"></p>
+    </article>
+</template>
+</body>
+</html>
