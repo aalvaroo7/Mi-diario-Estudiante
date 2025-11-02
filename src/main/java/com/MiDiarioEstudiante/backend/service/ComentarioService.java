@@ -31,7 +31,7 @@ public class ComentarioService {
 
     public List<Comentario> obtenerPorPublicacion(Long publicacionId) {
         publicacionService.buscarPorId(publicacionId);
-        return comentarioRepository.findByPublicacionId(publicacionId);
+        return comentarioRepository.findByPublicacionIdOrderByFechaCreacionAsc(publicacionId);
     }
 
     public Comentario crear(Comentario comentario) {
