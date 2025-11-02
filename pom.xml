@@ -1,75 +1,68 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- 🔹 PARENT: Spring Boot -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.0</version>
-        <relativePath/>
+        <version>3.3.2</version>
+        <relativePath/> <!-- busca automáticamente el parent de Spring Boot -->
     </parent>
 
-    <groupId>com.TecnicasProgramacion</groupId>
+    <groupId>com.miDiario</groupId>
     <artifactId>MiDiarioEstudiante</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
+    <name>MiDiarioEstudiante</name>
+    <description>Backend para el blog Mi Diario Estudiante</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
     </properties>
 
     <dependencies>
-        <!-- Core Spring Web Server -->
+
+        <!-- ✅ Spring Boot Web (controladores REST, servidor embebido, etc.) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Validation (optional) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-
-        <!-- Spring Data JPA -->
+        <!-- ✅ Spring Data JPA (para conectar con MySQL mediante entidades) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- MySQL JDBC driver -->
+        <!-- ✅ Conector MySQL -->
         <dependency>
-            <groupId>mysql</groupId>
+            <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
-        <!-- Embedded MariaDB server for local development -->
+        <!-- ✅ Jackson (manejo de JSON en los controladores) -->
         <dependency>
-            <groupId>ch.vorburger.mariaDB4j</groupId>
-            <artifactId>mariaDB4j-springboot</artifactId>
-            <version>3.1.4</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
-        <!-- MariaDB JDBC driver -->
+        <!-- ✅ Lombok (para @Data, @Getter, @Setter, etc.) -->
         <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
         </dependency>
 
-        <!-- For LocalDate, LocalDateTime JSON parsing -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-        </dependency>
-
-        <!-- Tests -->
+        <!-- ✅ Test (opcional, para cuando uses JUnit) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -80,4 +73,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>
