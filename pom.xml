@@ -45,6 +45,19 @@
             <artifactId>mysql-connector-j</artifactId>
         </dependency>
 
+        <!-- Embedded MariaDB server for local development -->
+        <dependency>
+            <groupId>ch.vorburger.mariaDB4j</groupId>
+            <artifactId>mariaDB4j-springboot</artifactId>
+            <version>3.1.4</version>
+        </dependency>
+
+        <!-- MariaDB JDBC driver -->
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+        </dependency>
+
         <!-- For LocalDate, LocalDateTime JSON parsing -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
