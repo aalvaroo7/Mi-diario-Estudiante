@@ -36,7 +36,7 @@ public class NotificacionService {
 
     public List<Notificacion> obtenerPorUsuario(Long usuarioId) {
         usuarioService.buscarPorId(usuarioId);
-        return notificacionRepository.findByUsuarioId(usuarioId);
+        return notificacionRepository.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId);
     }
 
     public Notificacion marcarComoLeida(Long notificacionId) {

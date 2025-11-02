@@ -3,6 +3,7 @@ package com.MiDiarioEstudiante.backend.service;
 import com.MiDiarioEstudiante.backend.model.Publicacion;
 import com.MiDiarioEstudiante.backend.model.Usuario;
 import com.MiDiarioEstudiante.backend.repository.PublicacionRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -21,12 +22,12 @@ public class PublicacionService {
     }
 
     public List<Publicacion> obtenerTodas() {
-        return publicacionRepository.findAll();
+        return publicacionRepository.findAll(Sort.by(Sort.Direction.DESC, "fechaCreacion"));
     }
 
     public List<Publicacion> obtenerPorUsuario(Long usuarioId) {
         usuarioService.buscarPorId(usuarioId);
-        return publicacionRepository.findByUsuarioId(usuarioId);
+        return publicacionRepository.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId);
     }
 
     public Publicacion crear(Publicacion publicacion) {
