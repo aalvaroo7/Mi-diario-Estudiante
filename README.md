@@ -1,3 +1,5 @@
+```mermaid
+
 classDiagram
     direction LR
 
@@ -194,18 +196,18 @@ classDiagram
         +TipoReaccion tipo
     }
 
-    enum TipoVisibilidad {
+   class TipoVisibilidad {
         PUBLICA
         PRIVADA
     }
 
-    enum TipoReaccion {
+   class TipoReaccion {
         ME_GUSTA
         ME_ENCANTA
         ME_APOYA
     }
 
-    enum TipoNotificacion {
+  class TipoNotificacion {
         GENERAL
         COMENTARIO
         REACCION
@@ -262,3 +264,4 @@ classDiagram
     NotificacionRepository --> Notificacion
 
     Main --> WebConfig
+```
