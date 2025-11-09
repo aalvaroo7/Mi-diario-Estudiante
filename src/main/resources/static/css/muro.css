@@ -1,0 +1,62 @@
+/* ======== NUEVA SECCIÓN DE PUBLICACIONES ======== */
+.crear-post {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    width: 80%;
+    max-width: 600px;
+}
+
+.crear-post textarea {
+    width: 100%;
+    resize: none;
+    margin-bottom: 0.8rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-family: inherit;
+}
+
+.crear-post input[type="file"] {
+    margin-bottom: 1rem;
+}
+
+.crear-post button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.feed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.post {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 1rem;
+    width: 80%;
+    max-width: 600px;
+}
+
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.post-img {
+    width: 100%;
+    margin-top: 0.5rem;
+    border-radius: 8px;
+}
