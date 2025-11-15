@@ -4,11 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import com.miDiario.blog.model.Usuario;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.Optional;
-
 
 @Entity
 @Table(name = "usuarios")
@@ -17,33 +12,40 @@ import java.util.Optional;
 @NoArgsConstructor
 public class Usuario {
 
-    public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
-        Optional<Usuario> findByNombreUsuario(String nombreUsuario);
-        Optional<Usuario> findByCorreo(String correo);
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Nombre visible del usuario
     @Column(nullable = false)
     private String nombre;
 
-    @Column(nullable = false)
+    @Column
     private String apellidos;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "nombre_usuario")
     private String nombreUsuario;
 
-    @Column(nullable = false)
+    @Column
     private String genero;
 
-    @Column(nullable = false, unique = true)
-    private String correo;
+    // Email mapeado a la columna `correo` de la BD
+    @Column(name = "correo", nullable = false, unique = true)
+    private String email;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private String rol;
+    // Nº de intentos fallidos de login
+    @Column(name = "intentos_fallidos", nullable = false)
+    private int intentosFallidos = 0;
+
+    // Estado del usuario (activo/bloqueado)
+    @Column(name = "activo", nullable = false)
+    private boolean activo = true;
+
+    // Rol (USUARIO, ADMIN, TECNICO) vía tabla roles
+    @ManyToOne
+    @JoinColumn(name = "rol_id")
+    private Rol rol;
 }

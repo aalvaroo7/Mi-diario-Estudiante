@@ -1,27 +1,33 @@
 package com.miDiario.blog.controller;
 
-import com.miDiario.blog.model.Usuario;
 import com.miDiario.blog.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/usuarios")
 @CrossOrigin(origins = "*")
 public class UsuarioController {
 
-    @Autowired
-    private UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
 
-    @PostMapping("/registro")
-    public String registrar(@RequestBody Usuario usuario) {
-        return usuarioService.registrarUsuario(usuario);
+    public UsuarioController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
     }
 
-    @PostMapping("/login")
-    public Optional<Usuario> login(@RequestParam String nombreUsuario, @RequestParam String password) {
-        return usuarioService.login(nombreUsuario, password);
+    // SOLO gestión de usuarios (p.ej. bloqueo por admin)
+    @PutMapping("/bloquear/{id}")
+    public ResponseEntity<?> bloquearUsuario(
+            @PathVariable Long id,
+            HttpSession session) {
+
+        // Validación de sesión
+        if (session.getAttribute("usuarioId") == null) {
+            return ResponseEntity.status(401).body("No autenticado");
+        }
+
+        Long adminId = (Long) session.getAttribute("usuarioId");
+        return usuarioService.bloquear(adminId, id);
     }
 }

@@ -3,9 +3,10 @@ package com.miDiario.blog.service;
 import com.miDiario.blog.model.Publicacion;
 import com.miDiario.blog.model.Usuario;
 import com.miDiario.blog.repository.PublicacionRepository;
+import com.miDiario.blog.repository.UsuarioRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,29 +14,56 @@ import java.util.Optional;
 public class PublicacionService {
 
     private final PublicacionRepository publicacionRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public PublicacionService(PublicacionRepository publicacionRepository) {
+    public PublicacionService(PublicacionRepository publicacionRepository,
+                              UsuarioRepository usuarioRepository) {
         this.publicacionRepository = publicacionRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
-    public Publicacion crear(Publicacion p) {
-        p.setFechaPublicacion(LocalDateTime.now());
-        return publicacionRepository.save(p);
+    // ============================================================
+    // CREAR PUBLICACIÓN (método que espera tu controlador)
+    // ============================================================
+    public Publicacion crearPublicacion(Publicacion publicacion, Long usuarioId) {
+
+        Optional<Usuario> usuarioOpt = usuarioRepository.findById(usuarioId);
+        if (usuarioOpt.isEmpty()) {
+            return null; // o lanzar excepción si prefieres
+        }
+
+        Usuario usuario = usuarioOpt.get();
+        publicacion.setUsuario(usuario);
+
+        return publicacionRepository.save(publicacion);
     }
 
-    public List<Publicacion> todas() {
+    // ============================================================
+    // OBTENER TODAS (método que espera tu controlador)
+    // ============================================================
+    public List<Publicacion> obtenerTodas() {
         return publicacionRepository.findAll();
     }
 
-    public List<Publicacion> porUsuario(Usuario u) {
-        return publicacionRepository.findByAutor(u);
-    }
+    // ============================================================
+    // ELIMINAR (método que espera tu controlador)
+    // ============================================================
+    public ResponseEntity<?> eliminarPublicacion(Long idPublicacion, Long idUsuario) {
 
-    public Optional<Publicacion> porId(Long id) {
-        return publicacionRepository.findById(id);
-    }
+        Optional<Publicacion> pubOpt = publicacionRepository.findById(idPublicacion);
+        if (pubOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("Publicación no encontrada");
+        }
 
-    public void eliminar(Long id) {
-        publicacionRepository.deleteById(id);
+        Publicacion p = pubOpt.get();
+
+        // Validar que la publicación pertenece al usuario
+        if (!p.getUsuario().getId().equals(idUsuario)) {
+            return ResponseEntity.status(403).body("No puedes eliminar esta publicación");
+        }
+
+        publicacionRepository.delete(p);
+
+        return ResponseEntity.ok("Publicación eliminada correctamente");
     }
 }

@@ -9,22 +9,23 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "publicaciones")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 public class Publicacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String contenido;
 
-    @Column(columnDefinition = "LONGTEXT")
-    private String imagenUrl;
+    @Column(name = "fecha_publicacion")
+    private LocalDateTime fechaPublicacion = LocalDateTime.now();
 
-    private LocalDateTime fechaPublicacion;
-
+    // RELACIÓN con Usuario
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario autor;
+    private Usuario usuario;
 }
