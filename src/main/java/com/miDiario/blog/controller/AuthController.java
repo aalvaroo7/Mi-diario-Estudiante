@@ -2,8 +2,10 @@ package com.miDiario.blog.controller;
 
 import com.miDiario.blog.dto.RegistroDTO;
 import com.miDiario.blog.dto.LoginDTO;
+import com.miDiario.blog.model.Usuario;
 import com.miDiario.blog.service.UsuarioService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -35,4 +37,20 @@ public class AuthController {
         usuarioService.logout(session);
         return "Sesión cerrada";
     }
+    @PostMapping("/auth/login")
+    public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
+
+        Usuario usuario = usuarioService.buscarPorIdentificador(loginDTO.getIdentificador());
+
+        if (usuario == null) {
+            return ResponseEntity.status(401).body("Usuario o email incorrecto");
+        }
+
+        if (!passwordEncoder.matches(loginDTO.getPassword(), usuario.getPassword())) {
+            return ResponseEntity.status(401).body("Contraseña incorrecta");
+        }
+
+        return ResponseEntity.ok(usuario);
+    }
+
 }

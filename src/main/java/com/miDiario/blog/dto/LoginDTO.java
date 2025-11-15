@@ -1,7 +1,7 @@
 package com.miDiario.blog.dto;
 
 public class LoginDTO {
-
+    private String identificador;
     private String email;
     private String password;
 

@@ -179,4 +179,16 @@ public class UsuarioService {
 
         return ResponseEntity.ok("Usuario bloqueado");
     }
+
+    public Usuario buscarPorIdentificador(String identificador) {
+        if (identificador.contains("@")) {
+            return usuarioRepo.findByCorreo(identificador)
+                    .orElse(null);
+        } else {
+            return usuarioRepo.findByNombreUsuario(identificador)
+                    .orElse(null);
+        }
+    }
+
+
 }
