@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch("/auth/login", {
                 method: "POST",
+                credentials: "same-origin",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     identificador,   // puede ser nombreUsuario o correo
@@ -63,7 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 nombre: usuario.nombre ?? "",
                 apellidos: usuario.apellidos ?? "",
                 nombreUsuario: usuario.nombreUsuario ?? usuario.nombre ?? "",
-                email: usuario.email ?? "",
+                email: usuario.email ?? usuario.correo ?? "",
+                correo: usuario.correo ?? usuario.email ?? "",
                 genero: usuario.genero ?? "",
                 rol: usuario.rol ?? "",
                 activo: usuario.activo ?? false

@@ -3,12 +3,11 @@ package com.miDiario.blog.dto;
 import com.miDiario.blog.model.Usuario;
 
 public class UsuarioDTO {
-
-    private Long id;
+    private long id;
     private String nombre;
     private String apellidos;
     private String nombreUsuario;
-    private String email;
+    private String correo;
     private String genero;
     private String rol;
     private boolean activo;
@@ -22,17 +21,17 @@ public class UsuarioDTO {
         this.nombre = usuario.getNombre();
         this.apellidos = usuario.getApellidos();
         this.nombreUsuario = usuario.getNombreUsuario();
-        this.email = usuario.getEmail();
+        this.correo = usuario.getCorreo();
         this.genero = usuario.getGenero();
-        this.rol = usuario.getRol() != null ? usuario.getRol().getNombre() : null;
+        this.rol = usuario.getRol();
         this.activo = usuario.isActivo();
     }
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -60,12 +59,12 @@ public class UsuarioDTO {
         this.nombreUsuario = nombreUsuario;
     }
 
-    public String getEmail() {
-        return email;
+    public String getCorreo() {
+        return correo;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setCorreo(String correo) {
+        this.correo = correo;
     }
 
     public String getGenero() {
