@@ -1,24 +1,16 @@
 package com.miDiario.blog.dto;
 
 public class LoginDTO {
-    private String identificador;
-    private String email;
+
+    private String identificador;  // Puede ser email o nombreUsuario
     private String password;
 
-    public LoginDTO() {
+    public String getIdentificador() {
+        return identificador;
     }
 
-    public LoginDTO(String email, String password) {
-        this.email = email;
-        this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+    public void setIdentificador(String identificador) {
+        this.identificador = identificador;
     }
 
     public String getPassword() {

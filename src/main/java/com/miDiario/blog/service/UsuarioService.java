@@ -34,7 +34,170 @@ public class UsuarioService {
     }
 
     // ============================================================
-    // MÉTODO PRIVADO PARA REGISTRAR AUDITORÍA (RNF-13)
+    // BUSCAR POR EMAIL O NOMBRE (LOGIN FLEXIBLE)
+    // ============================================================
+    public Usuario buscarPorIdentificador(String identificador) {
+
+        // 1) Si contiene @ → email
+        if (identificador.contains("@")) {
+            return usuarioRepo.findByEmail(identificador);
+        }
+
+        // 2) Si coincide con nombre_usuario
+        Usuario porUsername = usuarioRepo.findByNombreUsuario(identificador);
+        if (porUsername != null) return porUsername;
+
+        // 3) Si coincide con nombre real
+        return usuarioRepo.findByNombre(identificador);
+    }
+
+    // ============================================================
+// LOGIN DEFINITIVO (FLEXIBLE + BCRYPT + AUTO-CIFRADO)
+// ============================================================
+    public String login(LoginDTO dto, HttpSession session) {
+
+        // Buscar por email o nombreUsuario
+        Usuario u;
+
+        if (dto.getIdentificador().contains("@")) {
+            u = usuarioRepo.findByEmail(dto.getIdentificador());
+        } else {
+            u = usuarioRepo.findByNombreUsuario(dto.getIdentificador());
+        }
+
+        if (u == null) {
+            registrarAuditoria(null, "LOGIN_FALLIDO", false,
+                    "Usuario/email no encontrado: " + dto.getIdentificador());
+            return "Usuario no encontrado";
+        }
+
+        if (!u.isActivo()) {
+            registrarAuditoria(u, "LOGIN_FALLIDO", false,
+                    "Usuario bloqueado");
+            return "Usuario bloqueado";
+        }
+
+        // ---- Obtener contraseñas ----
+        String passwordBD = u.getPassword();
+        String passwordLogin = dto.getPassword();
+
+        boolean passwordCoincide;
+
+        // ======================================================
+        // 🔥 AUTO-CIFRADO DE CONTRASEÑAS EN TEXTO PLANO
+        // ======================================================
+        if (!passwordBD.startsWith("$2a$")) {
+
+            String nuevaPasswordHash = encoder.encode(passwordBD);
+            u.setPassword(nuevaPasswordHash);
+            usuarioRepo.save(u);
+
+            System.out.println("🔐 Contraseña de " + u.getNombre() +
+                    " cifrada automáticamente (BCrypt).");
+        }
+
+        // ======================================================
+        // VALIDACIÓN NORMAL CON BCRYPT
+        // ======================================================
+        passwordCoincide = encoder.matches(passwordLogin, u.getPassword());
+
+        if (!passwordCoincide) {
+
+            u.setIntentosFallidos(u.getIntentosFallidos() + 1);
+            usuarioRepo.save(u);
+
+            registrarAuditoria(u, "LOGIN_FALLIDO", false,
+                    "Contraseña incorrecta");
+            return "Contraseña incorrecta";
+        }
+
+        // ======================================================
+        // LOGIN CORRECTO
+        // ======================================================
+        u.setIntentosFallidos(0);
+        usuarioRepo.save(u);
+
+        session.setAttribute("usuarioId", u.getId());
+        session.setAttribute("rol", u.getRol().getNombre());
+
+        registrarAuditoria(u, "LOGIN_EXITOSO", true,
+                "Inicio de sesión correcto");
+
+        return "Login correcto";
+    }
+
+    // ============================================================
+    // LOGOUT
+    // ============================================================
+    public void logout(HttpSession session) {
+
+        Long id = (Long) session.getAttribute("usuarioId");
+
+        if (id != null) {
+            usuarioRepo.findById(id).ifPresent(u -> registrarAuditoria(
+                    u, "LOGOUT", true, "Cierre de sesión exitoso"));
+        }
+
+        session.invalidate();
+    }
+
+    // ============================================================
+    // BLOQUEAR USUARIO (ADMIN)
+    // ============================================================
+    public ResponseEntity<?> bloquear(Long adminId, Long usuarioId) {
+
+        Optional<Usuario> optAdmin = usuarioRepo.findById(adminId);
+        Optional<Usuario> optUser = usuarioRepo.findById(usuarioId);
+
+        if (optAdmin.isEmpty()) return ResponseEntity.status(404).body("Admin no encontrado");
+
+        Usuario admin = optAdmin.get();
+
+        if (!"ADMIN".equalsIgnoreCase(admin.getRol().getNombre()))
+            return ResponseEntity.status(403).body("No tienes permisos");
+
+        if (optUser.isEmpty()) return ResponseEntity.status(404).body("Usuario no encontrado");
+
+        Usuario u = optUser.get();
+        u.setActivo(false);
+        usuarioRepo.save(u);
+
+        registrarAuditoria(u, "BLOQUEADO_ADMIN", true,
+                "Usuario bloqueado por admin: " + admin.getNombre());
+
+        return ResponseEntity.ok("Usuario bloqueado correctamente");
+    }
+
+    // ============================================================
+    // DESBLOQUEAR USUARIO (ADMIN)
+    // ============================================================
+    public ResponseEntity<?> desbloquear(Long adminId, Long usuarioId) {
+
+        Optional<Usuario> optAdmin = usuarioRepo.findById(adminId);
+        Optional<Usuario> optUser = usuarioRepo.findById(usuarioId);
+
+        if (optAdmin.isEmpty()) return ResponseEntity.status(404).body("Admin no encontrado");
+
+        Usuario admin = optAdmin.get();
+
+        if (!"ADMIN".equalsIgnoreCase(admin.getRol().getNombre()))
+            return ResponseEntity.status(403).body("No tienes permisos");
+
+        if (optUser.isEmpty()) return ResponseEntity.status(404).body("Usuario no encontrado");
+
+        Usuario u = optUser.get();
+        u.setActivo(true);
+        u.setIntentosFallidos(0);
+        usuarioRepo.save(u);
+
+        registrarAuditoria(u, "DESBLOQUEADO_ADMIN", true,
+                "Usuario desbloqueado por admin: " + admin.getNombre());
+
+        return ResponseEntity.ok("Usuario desbloqueado correctamente");
+    }
+
+    // ============================================================
+    // AUDITORÍA
     // ============================================================
     private void registrarAuditoria(Usuario usuario, String accion, boolean exito, String detalles) {
         Auditoria a = new Auditoria();
@@ -44,151 +207,4 @@ public class UsuarioService {
         a.setDetalles(detalles);
         auditoriaRepo.save(a);
     }
-
-
-    // ============================================================
-    // REGISTRO (RF-01 + RNF-01 + RNF-14)
-    // ============================================================
-    public String registrar(RegistroDTO dto) {
-
-        if (usuarioRepo.existsByEmail(dto.getEmail())) {
-            registrarAuditoria(null, "REGISTRO_FALLIDO", false,
-                    "Email duplicado: " + dto.getEmail());
-            return "El email ya está registrado";
-        }
-
-        if (usuarioRepo.existsByNombre(dto.getNombre())) {
-            registrarAuditoria(null, "REGISTRO_FALLIDO", false,
-                    "Nombre duplicado: " + dto.getNombre());
-            return "El nombre ya está en uso";
-        }
-
-        Usuario u = new Usuario();
-        u.setNombre(dto.getNombre());
-        u.setEmail(dto.getEmail());
-        u.setPassword(encoder.encode(dto.getPassword()));
-        u.setIntentosFallidos(0);
-        u.setActivo(true);
-
-        Rol rolUsuario = rolRepo.findByNombre("USUARIO");
-        u.setRol(rolUsuario);
-
-        usuarioRepo.save(u);
-
-        registrarAuditoria(u, "REGISTRO_EXITOSO", true,
-                "Usuario registrado correctamente");
-
-        return "Usuario registrado correctamente";
-    }
-
-
-    // ============================================================
-    // LOGIN (RF-02 + RNF-12 + RNF-02 + RNF-03 + RNF-13)
-    // ============================================================
-    public String login(LoginDTO dto, HttpSession session) {
-
-        Usuario u = usuarioRepo.findByEmail(dto.getEmail());
-
-        if (u == null) {
-            registrarAuditoria(null, "LOGIN_FALLIDO", false,
-                    "Email no encontrado: " + dto.getEmail());
-            return "Usuario no encontrado";
-        }
-
-        if (!u.isActivo()) {
-            registrarAuditoria(u, "LOGIN_BLOQUEADO", false,
-                    "Usuario desactivado por intentos fallidos");
-            return "Usuario bloqueado";
-        }
-
-        if (u.getIntentosFallidos() >= 5) {
-            u.setActivo(false);
-            usuarioRepo.save(u);
-
-            registrarAuditoria(u, "LOGIN_BLOQUEADO", false,
-                    "Usuario bloqueado automáticamente por 5 intentos fallidos");
-            return "Usuario bloqueado por demasiados intentos";
-        }
-
-        boolean ok = encoder.matches(dto.getPassword(), u.getPassword());
-
-        if (!ok) {
-            u.setIntentosFallidos(u.getIntentosFallidos() + 1);
-            usuarioRepo.save(u);
-
-            registrarAuditoria(u, "LOGIN_FALLIDO", false,
-                    "Contraseña incorrecta. Intentos: " + u.getIntentosFallidos());
-
-            return "Contraseña incorrecta";
-        }
-
-        // Login correcto
-        u.setIntentosFallidos(0);
-        usuarioRepo.save(u);
-
-        session.setAttribute("usuarioId", u.getId());
-        session.setAttribute("rol", u.getRol().getNombre());
-
-        registrarAuditoria(u, "LOGIN_EXITOSO", true,
-                "Inicio de sesión exitoso");
-
-        return "Login correcto";
-    }
-
-
-    // ============================================================
-    // LOGOUT (RF-21 + AUDITORÍA)
-    // ============================================================
-    public void logout(HttpSession session) {
-
-        Long id = (Long) session.getAttribute("usuarioId");
-
-        if (id != null) {
-            usuarioRepo.findById(id).ifPresent(u ->
-                    registrarAuditoria(u, "LOGOUT", true, "Cierre de sesión exitoso"));
-        }
-
-        session.invalidate();
-    }
-
-
-    // ============================================================
-    // BLOQUEO POR ADMIN (MÓDULO C FUTURO) + AUDITORÍA
-    // ============================================================
-    public ResponseEntity<?> bloquear(Long adminId, Long usuarioId) {
-
-        Optional<Usuario> optAdmin = usuarioRepo.findById(adminId);
-        Optional<Usuario> optU = usuarioRepo.findById(usuarioId);
-
-        if (optAdmin.isEmpty())
-            return ResponseEntity.status(404).body("Admin no encontrado");
-
-        Usuario admin = optAdmin.get();
-        if (!"ADMIN".equalsIgnoreCase(admin.getRol().getNombre()))
-            return ResponseEntity.status(403).body("No tienes permisos");
-
-        if (optU.isEmpty())
-            return ResponseEntity.status(404).body("Usuario no encontrado");
-
-        Usuario u = optU.get();
-        u.setActivo(false);
-        usuarioRepo.save(u);
-
-        registrarAuditoria(u, "BLOQUEADO_ADMIN", true,
-                "Usuario bloqueado por administrador " + admin.getNombre());
-
-        return ResponseEntity.ok("Usuario bloqueado");
-    }
-
-    public Usuario buscarPorIdentificador(String identificador) {
-        if (identificador.contains("@")) {
-            return usuarioRepo.findByCorreo(identificador)
-                    .orElse(null);
-        } else {
-            return usuarioRepo.findByNombreUsuario(identificador)
-                    .orElse(null);
-        }
-    }
-
-
 }
