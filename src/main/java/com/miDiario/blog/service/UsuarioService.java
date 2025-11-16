@@ -38,6 +38,10 @@ public class UsuarioService {
     // ============================================================
     public Usuario buscarPorIdentificador(String identificador) {
 
+        if (identificador == null || identificador.isBlank()) {
+            return null;
+        }
+
         // 1) Si contiene @ → email
         if (identificador.contains("@")) {
             return usuarioRepo.findByEmail(identificador);
@@ -95,6 +99,12 @@ public class UsuarioService {
 // LOGIN DEFINITIVO (FLEXIBLE + BCRYPT + AUTO-CIFRADO)
 // ============================================================
     public String login(LoginDTO dto, HttpSession session) {
+
+        if (dto == null || dto.getIdentificador() == null || dto.getIdentificador().isBlank()
+                || dto.getPassword() == null || dto.getPassword().isBlank()) {
+            registrarAuditoria(null, "LOGIN_FALLIDO", false, "Credenciales incompletas");
+            return "Debes proporcionar usuario/email y contraseña";
+        }
 
         // Buscar por email o nombreUsuario
         Usuario u;

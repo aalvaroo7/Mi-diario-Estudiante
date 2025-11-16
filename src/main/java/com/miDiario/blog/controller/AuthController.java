@@ -2,6 +2,7 @@ package com.miDiario.blog.controller;
 
 import com.miDiario.blog.dto.LoginDTO;
 import com.miDiario.blog.dto.RegistroDTO;
+import com.miDiario.blog.dto.UsuarioDTO;
 import com.miDiario.blog.model.Usuario;
 import com.miDiario.blog.service.UsuarioService;
 import jakarta.servlet.http.HttpSession;
@@ -37,7 +38,11 @@ public class AuthController {
         // Devolver usuario completo para localStorage
         Usuario u = usuarioService.buscarPorIdentificador(dto.getIdentificador());
 
-        return ResponseEntity.ok(u);
+        if (u == null) {
+            return ResponseEntity.status(500).body("No se pudo recuperar el usuario");
+        }
+
+        return ResponseEntity.ok(new UsuarioDTO(u));
     }
 
     @PostMapping("/logout")
