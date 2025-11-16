@@ -1,51 +1,31 @@
 package com.miDiario.blog.model;
 
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "publicaciones")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Publicacion {
-    private long id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String contenido;
+
+    @Column(name = "fecha_publicacion")
     private LocalDateTime fechaPublicacion = LocalDateTime.now();
-    private Usuario autor;
 
-    public Publicacion() {
-    }
-
-    public Publicacion(long id, String contenido, Usuario autor) {
-        this.id = id;
-        this.contenido = contenido;
-        this.autor = autor;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getContenido() {
-        return contenido;
-    }
-
-    public void setContenido(String contenido) {
-        this.contenido = contenido;
-    }
-
-    public LocalDateTime getFechaPublicacion() {
-        return fechaPublicacion;
-    }
-
-    public void setFechaPublicacion(LocalDateTime fechaPublicacion) {
-        this.fechaPublicacion = fechaPublicacion;
-    }
-
-    public Usuario getAutor() {
-        return autor;
-    }
-
-    public void setAutor(Usuario autor) {
-        this.autor = autor;
-    }
+    // RELACIÓN con Usuario
+    @ManyToOne
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 }

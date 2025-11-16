@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("login.js cargado");
 
     const form = document.getElementById("loginForm");
-    const inputIdentificador = document.getElementById("identificador"); // usuario o email en el mismo campo
+    const inputIdentificador = document.getElementById("username"); // usuario o email en el mismo campo
     const inputPassword = document.getElementById("password");
 
     if (!form || !inputIdentificador || !inputPassword) {
@@ -27,7 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch("/auth/login", {
                 method: "POST",
-                credentials: "same-origin",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     identificador,   // puede ser nombreUsuario o correo
@@ -35,46 +34,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 })
             });
 
+            const text = await response.text();
+            console.log("Respuesta backend cruda:", text);
+
             if (!response.ok) {
-                const text = await response.text();
                 alert(text || "Error al iniciar sesión");
                 return;
             }
 
-            // Intentamos leer JSON de forma segura
+            // El backend debe devolver aquí el usuario en JSON.
+            // Si text es JSON, lo parseamos:
             let usuario;
             try {
-                usuario = await response.json();
+                usuario = JSON.parse(text);
             } catch (e) {
                 console.error("No se pudo parsear la respuesta como JSON:", e);
                 alert("Formato de respuesta no válido (no es JSON)");
                 return;
             }
 
-            if (!usuario || typeof usuario !== "object") {
-                console.error("Respuesta sin usuario válido:", usuario);
-                alert("No se pudo recuperar los datos del usuario");
-                return;
-            }
-
-            // Normalizamos la estructura para evitar fallos por propiedades faltantes
-            const usuarioNormalizado = {
-                id: usuario.id ?? usuario.usuarioId ?? null,
-                usuarioId: usuario.usuarioId ?? usuario.id ?? null,
-                nombre: usuario.nombre ?? "",
-                apellidos: usuario.apellidos ?? "",
-                nombreUsuario: usuario.nombreUsuario ?? usuario.nombre ?? "",
-                email: usuario.email ?? usuario.correo ?? "",
-                correo: usuario.correo ?? usuario.email ?? "",
-                genero: usuario.genero ?? "",
-                rol: usuario.rol ?? "",
-                activo: usuario.activo ?? false
-            };
-
-            console.log("Usuario logueado:", usuarioNormalizado);
+            // Esperamos que el objeto tenga al menos nombreUsuario y/o correo
+            console.log("Usuario logueado:", usuario);
 
             // guardamos SIEMPRE con la MISMA clave
-            localStorage.setItem("usuario", JSON.stringify(usuarioNormalizado));
+            localStorage.setItem("usuario", JSON.stringify(usuario));
 
             // redirigimos al muro
             window.location.href = "/html/muro.html";
