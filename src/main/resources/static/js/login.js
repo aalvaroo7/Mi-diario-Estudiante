@@ -34,30 +34,45 @@ document.addEventListener("DOMContentLoaded", () => {
                 })
             });
 
-            const text = await response.text();
-            console.log("Respuesta backend cruda:", text);
-
             if (!response.ok) {
+                const text = await response.text();
                 alert(text || "Error al iniciar sesión");
                 return;
             }
 
-            // El backend debe devolver aquí el usuario en JSON.
-            // Si text es JSON, lo parseamos:
+            // Intentamos leer JSON de forma segura
             let usuario;
             try {
-                usuario = JSON.parse(text);
+                usuario = await response.json();
             } catch (e) {
                 console.error("No se pudo parsear la respuesta como JSON:", e);
                 alert("Formato de respuesta no válido (no es JSON)");
                 return;
             }
 
-            // Esperamos que el objeto tenga al menos nombreUsuario y/o correo
-            console.log("Usuario logueado:", usuario);
+            if (!usuario || typeof usuario !== "object") {
+                console.error("Respuesta sin usuario válido:", usuario);
+                alert("No se pudo recuperar los datos del usuario");
+                return;
+            }
+
+            // Normalizamos la estructura para evitar fallos por propiedades faltantes
+            const usuarioNormalizado = {
+                id: usuario.id ?? usuario.usuarioId ?? null,
+                usuarioId: usuario.usuarioId ?? usuario.id ?? null,
+                nombre: usuario.nombre ?? "",
+                apellidos: usuario.apellidos ?? "",
+                nombreUsuario: usuario.nombreUsuario ?? usuario.nombre ?? "",
+                email: usuario.email ?? "",
+                genero: usuario.genero ?? "",
+                rol: usuario.rol ?? "",
+                activo: usuario.activo ?? false
+            };
+
+            console.log("Usuario logueado:", usuarioNormalizado);
 
             // guardamos SIEMPRE con la MISMA clave
-            localStorage.setItem("usuario", JSON.stringify(usuario));
+            localStorage.setItem("usuario", JSON.stringify(usuarioNormalizado));
 
             // redirigimos al muro
             window.location.href = "/html/muro.html";
