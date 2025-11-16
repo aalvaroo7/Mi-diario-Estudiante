@@ -1,14 +1,12 @@
 package com.miDiario.blog.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import com.miDiario.blog.model.Usuario;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
-
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "usuarios")
@@ -16,11 +14,6 @@ import java.util.Optional;
 @Setter
 @NoArgsConstructor
 public class Usuario {
-
-    public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
-        Optional<Usuario> findByNombreUsuario(String nombreUsuario);
-        Optional<Usuario> findByCorreo(String correo);
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,9 +34,17 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     private String correo;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rol_id")
+    private Rol rol;
+
     @Column(nullable = false)
-    private String rol;
+    private int intentosFallidos = 0;
+
+    @Column
+    private LocalDateTime cuentaBloqueadaHasta;
 }

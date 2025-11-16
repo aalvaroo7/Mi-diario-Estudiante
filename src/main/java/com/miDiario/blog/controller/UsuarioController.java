@@ -1,11 +1,12 @@
 package com.miDiario.blog.controller;
 
-import com.miDiario.blog.model.Usuario;
 import com.miDiario.blog.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
+import com.miDiario.blog.dto.PerfilResponse;
+import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -15,13 +16,8 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
-    @PostMapping("/registro")
-    public String registrar(@RequestBody Usuario usuario) {
-        return usuarioService.registrarUsuario(usuario);
-    }
-
-    @PostMapping("/login")
-    public Optional<Usuario> login(@RequestParam String nombreUsuario, @RequestParam String password) {
-        return usuarioService.login(nombreUsuario, password);
+    @GetMapping("/perfil/{id}")
+    public ResponseEntity<PerfilResponse> obtenerPerfil(@PathVariable Long id, HttpSession session) {
+        return ResponseEntity.ok(usuarioService.obtenerPerfil(id, session));
     }
 }
