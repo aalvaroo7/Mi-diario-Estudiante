@@ -98,16 +98,13 @@ if (publicarBtn) {
             return;
         }
 
-        const fd = new FormData();
-        fd.append("nombreUsuario", usuarioActivo.nombreUsuario);
-        fd.append("contenido", texto);
-        if (imagenInput.files && imagenInput.files.length > 0) {
-            fd.append("imagen", imagenInput.files[0]);
-        }
-
-        fetch("http://localhost:8080/api/publicaciones/crear", {
+        fetch("/api/publicaciones/crear", {
             method: "POST",
-            body: fd
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contenido: texto
+            })
         })
             .then(res => {
                 if (!res.ok) {
@@ -130,7 +127,7 @@ if (publicarBtn) {
 
 // Cargar publicaciones
 function cargarPublicaciones({ highlightLatest } = {}) {
-    fetch("http://localhost:8080/api/publicaciones/todas")
+    fetch("/api/publicaciones/todas", { credentials: "same-origin" })
         .then(r => r.json())
         .then(publicaciones => {
             const feed = document.getElementById("feed");
@@ -203,8 +200,9 @@ function cargarPublicaciones({ highlightLatest } = {}) {
 }
 
 function borrarPublicacion(id) {
-    fetch(`http://localhost:8080/api/publicaciones/eliminar/${id}`, {
-        method: "DELETE"
+    fetch(`/api/publicaciones/eliminar/${id}`, {
+        method: "DELETE",
+        credentials: "same-origin"
     })
         .then(() => cargarPublicaciones())
         .catch(err => console.error("Error al borrar publicación:", err));
