@@ -9,17 +9,13 @@ import com.miDiario.blog.repository.AuditoriaRepository;
 import com.miDiario.blog.repository.RolRepository;
 import com.miDiario.blog.repository.UsuarioRepository;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 public class UsuarioService {
-
-    private final UsuarioRepository usuarioRepo;
     private final RolRepository rolRepo;
+    private final UsuarioRepository usuarioRepo;
     private final AuditoriaRepository auditoriaRepo;
     private final BCryptPasswordEncoder encoder;
 
@@ -34,40 +30,68 @@ public class UsuarioService {
     }
 
     // ============================================================
-    // BUSCAR POR EMAIL O NOMBRE (LOGIN FLEXIBLE)
+    // LOGIN FLEXIBLE (email o usuario)
     // ============================================================
     public Usuario buscarPorIdentificador(String identificador) {
 
-        // 1) Si contiene @ → email
+        // si contiene @ → email
         if (identificador.contains("@")) {
             return usuarioRepo.findByEmail(identificador);
         }
 
-        // 2) Si coincide con nombre_usuario
-        Usuario porUsername = usuarioRepo.findByNombreUsuario(identificador);
-        if (porUsername != null) return porUsername;
-
-        // 3) Si coincide con nombre real
-        return usuarioRepo.findByNombre(identificador);
+        // si no → nombreUsuario
+        return usuarioRepo.findByNombreUsuario(identificador);
     }
 
     // ============================================================
-// LOGIN DEFINITIVO (FLEXIBLE + BCRYPT + AUTO-CIFRADO)
-// ============================================================
+    // REGISTRO EXACTO según RegistroDTO y Usuario
+    // ============================================================
+    public String registrar(RegistroDTO dto) {
+
+        if (usuarioRepo.existsByEmail(dto.getEmail())) {
+            return "El correo ya está registrado";
+        }
+
+        if (usuarioRepo.existsByNombreUsuario(dto.getNombreUsuario())) {
+            return "El nombre de usuario ya está en uso";
+        }
+
+        if (dto.getPassword().length() < 8) {
+            return "La contraseña debe tener al menos 8 caracteres";
+        }
+
+        Usuario u = new Usuario();
+        u.setNombre(dto.getNombre());
+        u.setNombreUsuario(dto.getNombreUsuario());
+        u.setEmail(dto.getEmail());      // ✔ Este sí existe
+        u.setPassword(encoder.encode(dto.getPassword()));
+        Rol rolUsuario = rolRepo.findByNombre("USUARIO");
+        if (rolUsuario == null) {
+            throw new RuntimeException("ERROR: El rol 'USUARIO' no existe en la base de datos");
+        }
+        u.setRol(rolUsuario);
+        u.setActivo(true);
+        u.setIntentosFallidos(0);
+
+        usuarioRepo.save(u);
+
+        registrarAuditoria(u, "REGISTRO_USUARIO", true,
+                "Usuario registrado correctamente");
+
+        return "Usuario registrado correctamente";
+    }
+
+
+    // ============================================================
+    // LOGIN
+    // ============================================================
     public String login(LoginDTO dto, HttpSession session) {
 
-        // Buscar por email o nombreUsuario
-        Usuario u;
-
-        if (dto.getIdentificador().contains("@")) {
-            u = usuarioRepo.findByEmail(dto.getIdentificador());
-        } else {
-            u = usuarioRepo.findByNombreUsuario(dto.getIdentificador());
-        }
+        Usuario u = buscarPorIdentificador(dto.getIdentificador());
 
         if (u == null) {
             registrarAuditoria(null, "LOGIN_FALLIDO", false,
-                    "Usuario/email no encontrado: " + dto.getIdentificador());
+                    "Usuario/email no encontrado");
             return "Usuario no encontrado";
         }
 
@@ -77,54 +101,40 @@ public class UsuarioService {
             return "Usuario bloqueado";
         }
 
-        // ---- Obtener contraseñas ----
         String passwordBD = u.getPassword();
         String passwordLogin = dto.getPassword();
 
-        boolean passwordCoincide;
-
-        // ======================================================
-        // 🔥 AUTO-CIFRADO DE CONTRASEÑAS EN TEXTO PLANO
-        // ======================================================
+        // Contraseñas antiguas sin hash
         if (!passwordBD.startsWith("$2a$")) {
-
-            String nuevaPasswordHash = encoder.encode(passwordBD);
-            u.setPassword(nuevaPasswordHash);
+            u.setPassword(encoder.encode(passwordBD));
             usuarioRepo.save(u);
-
-            System.out.println("🔐 Contraseña de " + u.getNombre() +
-                    " cifrada automáticamente (BCrypt).");
         }
 
-        // ======================================================
-        // VALIDACIÓN NORMAL CON BCRYPT
-        // ======================================================
-        passwordCoincide = encoder.matches(passwordLogin, u.getPassword());
-
-        if (!passwordCoincide) {
+        if (!encoder.matches(passwordLogin, u.getPassword())) {
 
             u.setIntentosFallidos(u.getIntentosFallidos() + 1);
             usuarioRepo.save(u);
 
             registrarAuditoria(u, "LOGIN_FALLIDO", false,
                     "Contraseña incorrecta");
+
             return "Contraseña incorrecta";
         }
 
-        // ======================================================
-        // LOGIN CORRECTO
-        // ======================================================
+        // LOGIN OK
         u.setIntentosFallidos(0);
         usuarioRepo.save(u);
 
         session.setAttribute("usuarioId", u.getId());
-        session.setAttribute("rol", u.getRol().getNombre());
+        session.setAttribute("nombre", u.getNombre());
+        session.setAttribute("rol", u.getRol());   // ✔ string
 
         registrarAuditoria(u, "LOGIN_EXITOSO", true,
                 "Inicio de sesión correcto");
 
         return "Login correcto";
     }
+
 
     // ============================================================
     // LOGOUT
@@ -134,77 +144,26 @@ public class UsuarioService {
         Long id = (Long) session.getAttribute("usuarioId");
 
         if (id != null) {
-            usuarioRepo.findById(id).ifPresent(u -> registrarAuditoria(
-                    u, "LOGOUT", true, "Cierre de sesión exitoso"));
+            usuarioRepo.findById(id)
+                    .ifPresent(u -> registrarAuditoria(u, "LOGOUT", true,
+                            "Cierre de sesión"));
         }
 
         session.invalidate();
     }
 
     // ============================================================
-    // BLOQUEAR USUARIO (ADMIN)
-    // ============================================================
-    public ResponseEntity<?> bloquear(Long adminId, Long usuarioId) {
-
-        Optional<Usuario> optAdmin = usuarioRepo.findById(adminId);
-        Optional<Usuario> optUser = usuarioRepo.findById(usuarioId);
-
-        if (optAdmin.isEmpty()) return ResponseEntity.status(404).body("Admin no encontrado");
-
-        Usuario admin = optAdmin.get();
-
-        if (!"ADMIN".equalsIgnoreCase(admin.getRol().getNombre()))
-            return ResponseEntity.status(403).body("No tienes permisos");
-
-        if (optUser.isEmpty()) return ResponseEntity.status(404).body("Usuario no encontrado");
-
-        Usuario u = optUser.get();
-        u.setActivo(false);
-        usuarioRepo.save(u);
-
-        registrarAuditoria(u, "BLOQUEADO_ADMIN", true,
-                "Usuario bloqueado por admin: " + admin.getNombre());
-
-        return ResponseEntity.ok("Usuario bloqueado correctamente");
-    }
-
-    // ============================================================
-    // DESBLOQUEAR USUARIO (ADMIN)
-    // ============================================================
-    public ResponseEntity<?> desbloquear(Long adminId, Long usuarioId) {
-
-        Optional<Usuario> optAdmin = usuarioRepo.findById(adminId);
-        Optional<Usuario> optUser = usuarioRepo.findById(usuarioId);
-
-        if (optAdmin.isEmpty()) return ResponseEntity.status(404).body("Admin no encontrado");
-
-        Usuario admin = optAdmin.get();
-
-        if (!"ADMIN".equalsIgnoreCase(admin.getRol().getNombre()))
-            return ResponseEntity.status(403).body("No tienes permisos");
-
-        if (optUser.isEmpty()) return ResponseEntity.status(404).body("Usuario no encontrado");
-
-        Usuario u = optUser.get();
-        u.setActivo(true);
-        u.setIntentosFallidos(0);
-        usuarioRepo.save(u);
-
-        registrarAuditoria(u, "DESBLOQUEADO_ADMIN", true,
-                "Usuario desbloqueado por admin: " + admin.getNombre());
-
-        return ResponseEntity.ok("Usuario desbloqueado correctamente");
-    }
-
-    // ============================================================
     // AUDITORÍA
     // ============================================================
-    private void registrarAuditoria(Usuario usuario, String accion, boolean exito, String detalles) {
-        Auditoria a = new Auditoria();
-        a.setUsuario(usuario);
-        a.setAccion(accion);
-        a.setExito(exito);
-        a.setDetalles(detalles);
-        auditoriaRepo.save(a);
+    private void registrarAuditoria(Usuario usuario, String accion,
+                                    boolean exito, String detalles) {
+
+        Auditoria audit = new Auditoria();
+        audit.setUsuario(usuario);
+        audit.setAccion(accion);
+        audit.setExito(exito);
+        audit.setDetalles(detalles);
+
+        auditoriaRepo.save(audit);
     }
 }
