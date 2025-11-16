@@ -38,6 +38,10 @@ public class UsuarioService {
     // ============================================================
     public Usuario buscarPorIdentificador(String identificador) {
 
+        if (identificador == null || identificador.isBlank()) {
+            return null;
+        }
+
         // 1) Si contiene @ → email
         if (identificador.contains("@")) {
             return usuarioRepo.findByEmail(identificador);
@@ -52,9 +56,55 @@ public class UsuarioService {
     }
 
     // ============================================================
+    // REGISTRO DE USUARIOS
+    // ============================================================
+    public String registrar(RegistroDTO dto) {
+
+        if (dto.getEmail() == null || dto.getEmail().isBlank()) {
+            return "El email es obligatorio";
+        }
+
+        if (dto.getNombreUsuario() == null || dto.getNombreUsuario().isBlank()) {
+            return "El nombre de usuario es obligatorio";
+        }
+
+        if (usuarioRepo.existsByEmail(dto.getEmail())) {
+            return "El correo ya está registrado";
+        }
+
+        if (usuarioRepo.existsByNombreUsuario(dto.getNombreUsuario())) {
+            return "El nombre de usuario ya está en uso";
+        }
+
+        Rol rolUsuario = rolRepo.findByNombre("USUARIO");
+        if (rolUsuario == null) {
+            return "Rol USUARIO no configurado";
+        }
+
+        Usuario nuevo = new Usuario();
+        nuevo.setNombre(dto.getNombre());
+        nuevo.setNombreUsuario(dto.getNombreUsuario());
+        nuevo.setEmail(dto.getEmail());
+        nuevo.setPassword(encoder.encode(dto.getPassword()));
+        nuevo.setRol(rolUsuario);
+
+        usuarioRepo.save(nuevo);
+
+        registrarAuditoria(nuevo, "REGISTRO", true, "Usuario registrado correctamente");
+
+        return "Usuario registrado correctamente";
+    }
+
+    // ============================================================
 // LOGIN DEFINITIVO (FLEXIBLE + BCRYPT + AUTO-CIFRADO)
 // ============================================================
     public String login(LoginDTO dto, HttpSession session) {
+
+        if (dto == null || dto.getIdentificador() == null || dto.getIdentificador().isBlank()
+                || dto.getPassword() == null || dto.getPassword().isBlank()) {
+            registrarAuditoria(null, "LOGIN_FALLIDO", false, "Credenciales incompletas");
+            return "Debes proporcionar usuario/email y contraseña";
+        }
 
         // Buscar por email o nombreUsuario
         Usuario u;
