@@ -52,6 +52,46 @@ public class UsuarioService {
     }
 
     // ============================================================
+    // REGISTRO DE USUARIOS
+    // ============================================================
+    public String registrar(RegistroDTO dto) {
+
+        if (dto.getEmail() == null || dto.getEmail().isBlank()) {
+            return "El email es obligatorio";
+        }
+
+        if (dto.getNombreUsuario() == null || dto.getNombreUsuario().isBlank()) {
+            return "El nombre de usuario es obligatorio";
+        }
+
+        if (usuarioRepo.existsByEmail(dto.getEmail())) {
+            return "El correo ya está registrado";
+        }
+
+        if (usuarioRepo.existsByNombreUsuario(dto.getNombreUsuario())) {
+            return "El nombre de usuario ya está en uso";
+        }
+
+        Rol rolUsuario = rolRepo.findByNombre("USUARIO");
+        if (rolUsuario == null) {
+            return "Rol USUARIO no configurado";
+        }
+
+        Usuario nuevo = new Usuario();
+        nuevo.setNombre(dto.getNombre());
+        nuevo.setNombreUsuario(dto.getNombreUsuario());
+        nuevo.setEmail(dto.getEmail());
+        nuevo.setPassword(encoder.encode(dto.getPassword()));
+        nuevo.setRol(rolUsuario);
+
+        usuarioRepo.save(nuevo);
+
+        registrarAuditoria(nuevo, "REGISTRO", true, "Usuario registrado correctamente");
+
+        return "Usuario registrado correctamente";
+    }
+
+    // ============================================================
 // LOGIN DEFINITIVO (FLEXIBLE + BCRYPT + AUTO-CIFRADO)
 // ============================================================
     public String login(LoginDTO dto, HttpSession session) {
