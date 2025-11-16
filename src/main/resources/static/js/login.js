@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("login.js cargado");
 
     const form = document.getElementById("loginForm");
-    const inputIdentificador = document.getElementById("username"); // usuario o email en el mismo campo
+    const inputIdentificador = document.getElementById("identificador");
     const inputPassword = document.getElementById("password");
 
     if (!form || !inputIdentificador || !inputPassword) {
