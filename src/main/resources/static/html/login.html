@@ -3,24 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Mi Diario Estudiante</title>
-    <link rel="stylesheet" href="/css/login.css?v=1">
+    <title>Iniciar Sesión - Mi Diario Estudiante</title>
+
+    <link rel="stylesheet" href="../css/login.css">
 </head>
+
 <body>
+
+<script>
+    // Activa animaciones del CSS
+    window.addEventListener("load", () => {
+        document.body.classList.add("page-loaded");
+    });
+</script>
+
 <div class="login-container">
-    <h1>Iniciar sesión</h1>
+    <h2>Iniciar Sesión</h2>
+
     <form id="loginForm">
-        <input type="text" id="username" placeholder="Nombre de usuario" required>
+        <input type="text" id="identificador" placeholder="Email o nombre" required>
         <input type="password" id="password" placeholder="Contraseña" required>
         <button type="submit">Entrar</button>
     </form>
-    <p class="register-link">
-        ¿No tienes cuenta? <a href="/html/registro.html">Regístrate</a>
-    </p>
 
+    <p class="register-link">
+        ¿No tienes cuenta?
+        <a href="registro.html">Regístrate aquí</a>
     </p>
 </div>
 
-<script src="/js/login.js?v=1"></script>
+<script src="../js/login.js?v=3"></script>
+
 </body>
 </html>

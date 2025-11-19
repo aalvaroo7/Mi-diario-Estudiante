@@ -1,51 +1,29 @@
-const usuarioActivo = JSON.parse(localStorage.getItem("usuarioActivo"));
-if (!usuarioActivo) window.location.href = "login.html";
+// /js/perfil.js
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("perfil.js cargado");
 
-// Mostrar datos del usuario
-document.getElementById("nombre").textContent = usuarioActivo.nombre;
-document.getElementById("apellidos").textContent = usuarioActivo.apellidos;
-document.getElementById("nombreUsuario").textContent = usuarioActivo.nombreUsuario;
-document.getElementById("genero").textContent = usuarioActivo.genero;
-document.getElementById("correo").textContent = usuarioActivo.correo;
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
 
-// Mostrar publicaciones del usuario
-function mostrarMisPublicaciones() {
-  const publicaciones = JSON.parse(localStorage.getItem("publicaciones")) || [];
-  const misPosts = publicaciones.filter(p => p.autor === usuarioActivo.nombreUsuario);
-  const contenedor = document.getElementById("misPublicaciones");
+    if (!usuario) {
+        window.location.href = "/html/login.html";
+        return;
+    }
 
-  contenedor.innerHTML = "";
+    // Ajusta estos IDs a lo que tengas en perfil.html
+    const nombreEl = document.getElementById("perfilNombre");
+    const usuarioEl = document.getElementById("perfilUsuario");
+    const correoEl = document.getElementById("perfilCorreo");
+    const generoEl = document.getElementById("perfilGenero");
 
-  if (misPosts.length === 0) {
-    contenedor.innerHTML = "<p>No tienes publicaciones aún.</p>";
-    return;
-  }
+    if (nombreEl) nombreEl.textContent = usuario.nombre || "";
+    if (usuarioEl) usuarioEl.textContent = usuario.nombreUsuario || "";
+    if (correoEl) correoEl.textContent = usuario.correo || usuario.email || "";
+    if (generoEl) generoEl.textContent = usuario.genero || "";
 
-  misPosts.forEach(pub => {
-    const post = document.createElement("div");
-    post.classList.add("post");
-
-    post.innerHTML = `
-      <div class="post-header">
-        <h3>${pub.autor}</h3>
-        <small>${new Date(pub.fecha).toLocaleString()}</small>
-      </div>
-      <p>${pub.texto}</p>
-      ${pub.imagen ? `<img src="${pub.imagen}" alt="imagen">` : ""}
-    `;
-
-    contenedor.appendChild(post);
-  });
-}
-
-mostrarMisPublicaciones();
-
-// Botones
-document.getElementById("logout").addEventListener("click", () => {
-  localStorage.removeItem("usuarioActivo");
-  window.location.href = "/html/login.html";
-});
-
-document.getElementById("volverMuro").addEventListener("click", () => {
-  window.location.href = "/html/muro.html";
+    const volverBtn = document.getElementById("volverMuro");
+    if (volverBtn) {
+        volverBtn.addEventListener("click", () => {
+            window.location.href = "/html/muro.html";
+        });
+    }
 });

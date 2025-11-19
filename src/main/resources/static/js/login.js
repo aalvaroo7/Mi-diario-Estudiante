@@ -1,29 +1,70 @@
-document.getElementById("loginForm").addEventListener("submit", function(e) {
-    e.preventDefault();
+// /js/login.js
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("login.js cargado");
 
-    const nombreUsuario = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+    const form = document.getElementById("loginForm");
+    const inputIdentificador = document.getElementById("identificador");
+    const inputPassword = document.getElementById("password");
 
-    fetch(`http://localhost:8080/api/usuarios/login?nombreUsuario=${nombreUsuario}&password=${password}`, {
-        method: "POST"
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("Error al iniciar sesión");
+    if (!form || !inputIdentificador || !inputPassword) {
+        console.error("❌ ERROR: No se encontró el formulario o los inputs de login");
+        return;
+    }
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const identificador = inputIdentificador.value.trim();
+        const password = inputPassword.value.trim();
+
+        console.log("Enviando:", identificador, password);
+
+        if (!identificador || !password) {
+            alert("Introduce usuario/email y contraseña");
+            return;
         }
-        return response.json();
-    })
-    .then(usuario => {
-        if (usuario && usuario.nombreUsuario) {
-            localStorage.setItem("usuarioActivo", JSON.stringify(usuario));
+
+        try {
+            const response = await fetch("/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    identificador,   // puede ser nombreUsuario o correo
+                    password
+                })
+            });
+
+            const text = await response.text();
+            console.log("Respuesta backend cruda:", text);
+
+            if (!response.ok) {
+                alert(text || "Error al iniciar sesión");
+                return;
+            }
+
+            // El backend debe devolver aquí el usuario en JSON.
+            // Si text es JSON, lo parseamos:
+            let usuario;
+            try {
+                usuario = JSON.parse(text);
+            } catch (e) {
+                console.error("No se pudo parsear la respuesta como JSON:", e);
+                alert("Formato de respuesta no válido (no es JSON)");
+                return;
+            }
+
+            // Esperamos que el objeto tenga al menos nombreUsuario y/o correo
+            console.log("Usuario logueado:", usuario);
+
+            // guardamos SIEMPRE con la MISMA clave
+            localStorage.setItem("usuario", JSON.stringify(usuario));
+
+            // redirigimos al muro
             window.location.href = "/html/muro.html";
 
-        } else {
-            alert("Usuario o contraseña incorrectos.");
+        } catch (err) {
+            console.error("❌ Error en login:", err);
+            alert("Error de comunicación con el servidor");
         }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        alert("No se pudo iniciar sesión.");
     });
 });

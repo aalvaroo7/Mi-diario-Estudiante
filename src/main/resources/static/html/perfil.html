@@ -3,35 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro - Mi Diario Estudiante</title>
-    <link rel="stylesheet" href="../css/login.css">
+    <title>Mi Perfil - Mi Diario Estudiante</title>
+
+    <link rel="stylesheet" href="../css/perfil.css">
 </head>
+
 <body>
-<div class="login-container">
-    <h1>Crear cuenta</h1>
-    <form id="registroForm">
-        <input type="text" id="nombre" placeholder="Nombre" required>
-        <input type="text" id="apellidos" placeholder="Apellidos" required>
-        <input type="text" id="nombreUsuario" placeholder="Nombre de usuario" required>
 
-        <select id="genero" required>
-            <option value="">Selecciona tu género</option>
-            <option value="Masculino">Masculino</option>
-            <option value="Femenino">Femenino</option>
-            <option value="Prefiero no contestar">Prefiero no contestar</option>
-        </select>
+<script>
+    window.addEventListener("load", () => {
+        document.body.classList.add("page-loaded");
+    });
+</script>
 
-        <input type="email" id="correo" placeholder="Correo electrónico" required>
-        <input type="password" id="password" placeholder="Contraseña" required>
+<div class="perfil-container">
+    <h2>Mi Perfil</h2>
 
-        <button type="submit">Registrar</button>
-    </form>
+    <div class="perfil-dato">
+        <span class="label">Nombre:</span>
+        <span id="perfilNombre"></span>
+    </div>
 
-    <p class="register-link">
-        ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
-    </p>
+    <div class="perfil-dato">
+        <span class="label">Usuario:</span>
+        <span id="perfilUsuario"></span>
+    </div>
+
+    <div class="perfil-dato">
+        <span class="label">Correo:</span>
+        <span id="perfilCorreo"></span>
+    </div>
+
+    <div class="perfil-dato">
+        <span class="label">Género:</span>
+        <span id="perfilGenero"></span>
+    </div>
+
+    <button id="volverMuro">Volver al muro</button>
 </div>
 
-<script src="../js/registro.js"></script>
+<script src="../js/perfil.js?v=4"></script>
+
 </body>
 </html>

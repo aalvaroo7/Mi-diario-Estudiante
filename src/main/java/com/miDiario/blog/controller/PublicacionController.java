@@ -1,69 +1,59 @@
 package com.miDiario.blog.controller;
 
 import com.miDiario.blog.model.Publicacion;
-import com.miDiario.blog.repository.PublicacionRepository;
-import com.miDiario.blog.repository.UsuarioRepository;
-import org.springframework.http.MediaType;
+import com.miDiario.blog.service.PublicacionService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
-import java.util.Base64;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/publicaciones")
-@CrossOrigin(origins = "*")
 public class PublicacionController {
 
-    private final PublicacionRepository publicacionRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final PublicacionService publicacionService;
 
-    public PublicacionController(PublicacionRepository publicacionRepository, UsuarioRepository usuarioRepository) {
-        this.publicacionRepository = publicacionRepository;
-        this.usuarioRepository = usuarioRepository;
+    public PublicacionController(PublicacionService publicacionService) {
+        this.publicacionService = publicacionService;
     }
 
-    @PostMapping(value = "/crear", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> crearPublicacion(
-            @RequestParam("nombreUsuario") String nombreUsuario,
-            @RequestParam("contenido") String contenido,
-            @RequestParam(value = "imagen", required = false) MultipartFile imagen) {
+    @PostMapping("/crear")
+    public ResponseEntity<?> crearPublicacion(
+            @RequestBody Publicacion publicacion,
+            HttpSession session) {
 
-        try {
-            var usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
-            if (usuarioOpt.isEmpty()) return ResponseEntity.badRequest().body("Usuario no encontrado");
-
-            var publicacion = new Publicacion();
-            publicacion.setAutor(usuarioOpt.get());
-            publicacion.setContenido(contenido);
-            publicacion.setFechaPublicacion(LocalDateTime.now());
-
-            if (imagen != null && !imagen.isEmpty()) {
-                // guardar imagen como url
-                String prefix = "data:" + imagen.getContentType() + ";base64,";
-                String base64 = Base64.getEncoder().encodeToString(imagen.getBytes());
-                publicacion.setImagenUrl(prefix + base64);
-            }
-
-            publicacionRepository.save(publicacion);
-            System.out.println("✅ Publicación creada: " + contenido);
-            return ResponseEntity.ok("Publicación creada correctamente");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body("Error al crear publicación: " + e.getMessage());
+        // 🔐 VALIDACIÓN DE SESIÓN
+        if (session.getAttribute("usuarioId") == null) {
+            return ResponseEntity.status(401).body("No autenticado");
         }
+
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+
+        return ResponseEntity.ok(publicacionService.crearPublicacion(publicacion, usuarioId));
     }
 
     @GetMapping("/todas")
-    public ResponseEntity<?> todas() {
-        return ResponseEntity.ok(publicacionRepository.findAll());
+    public ResponseEntity<?> obtenerTodas(HttpSession session) {
+
+        // 🔐 VALIDACIÓN DE SESIÓN
+        if (session.getAttribute("usuarioId") == null) {
+            return ResponseEntity.status(401).body("No autenticado");
+        }
+
+        return ResponseEntity.ok(publicacionService.obtenerTodas());
     }
 
     @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Long id) {
-        publicacionRepository.deleteById(id);
-        return ResponseEntity.ok("Publicación eliminada");
+    public ResponseEntity<?> eliminar(@PathVariable Long id, HttpSession session) {
+
+        // 🔐 VALIDACIÓN DE SESIÓN
+        if (session.getAttribute("usuarioId") == null) {
+            return ResponseEntity.status(401).body("No autenticado");
+        }
+
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+
+        return publicacionService.eliminarPublicacion(id, usuarioId);
     }
 }
