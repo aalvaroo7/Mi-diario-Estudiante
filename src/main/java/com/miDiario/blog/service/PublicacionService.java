@@ -6,7 +6,11 @@ import com.miDiario.blog.repository.PublicacionRepository;
 import com.miDiario.blog.repository.UsuarioRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,34 +26,39 @@ public class PublicacionService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    // ============================================================
-    // CREAR PUBLICACIÓN (método que espera tu controlador)
-    // ============================================================
-    public Publicacion crearPublicacion(Publicacion publicacion, Long usuarioId) {
-
+    public Publicacion crearPublicacion(String contenido, MultipartFile archivo, Long usuarioId) throws IOException {
+        // 1. Buscamos al usuario
         Optional<Usuario> usuarioOpt = usuarioRepository.findById(usuarioId);
         if (usuarioOpt.isEmpty()) {
-            return null; // o lanzar excepción si prefieres
+            throw new RuntimeException("Usuario no encontrado");
         }
 
-        Usuario usuario = usuarioOpt.get();
-        publicacion.setUsuario(usuario);
+        // 2. Preparamos la publicación
+        Publicacion nuevaPublicacion = new Publicacion();
+        nuevaPublicacion.setContenido(contenido);
+        nuevaPublicacion.setUsuario(usuarioOpt.get());
+        nuevaPublicacion.setFechaPublicacion(LocalDateTime.now());
 
-        return publicacionRepository.save(publicacion);
+        // 3. Procesamos la imagen si existe
+        if (archivo != null && !archivo.isEmpty()) {
+            // Convertimos los bytes de la imagen a String Base64
+            byte[] bytes = archivo.getBytes();
+            String base64Image = Base64.getEncoder().encodeToString(bytes);
+
+            // Guardamos con el formato correcto para que HTML lo entienda (data:image/png;base64,...)
+            nuevaPublicacion.setImagenUrl("data:" + archivo.getContentType() + ";base64," + base64Image);
+        }
+
+        // 4. Guardamos en Base de Datos
+        return publicacionRepository.save(nuevaPublicacion);
     }
 
-    // ============================================================
-    // OBTENER TODAS (método que espera tu controlador)
-    // ============================================================
     public List<Publicacion> obtenerTodas() {
+        // Devuelve las más recientes primero (Opcional: añadir un OrderBy en el repositorio)
         return publicacionRepository.findAll();
     }
 
-    // ============================================================
-    // ELIMINAR (método que espera tu controlador)
-    // ============================================================
     public ResponseEntity<?> eliminarPublicacion(Long idPublicacion, Long idUsuario) {
-
         Optional<Publicacion> pubOpt = publicacionRepository.findById(idPublicacion);
         if (pubOpt.isEmpty()) {
             return ResponseEntity.status(404).body("Publicación no encontrada");
@@ -57,13 +66,12 @@ public class PublicacionService {
 
         Publicacion p = pubOpt.get();
 
-        // Validar que la publicación pertenece al usuario
+        // Solo el dueño puede borrarla
         if (!p.getUsuario().getId().equals(idUsuario)) {
-            return ResponseEntity.status(403).body("No puedes eliminar esta publicación");
+            return ResponseEntity.status(403).body("No tienes permiso para eliminar esto");
         }
 
         publicacionRepository.delete(p);
-
-        return ResponseEntity.ok("Publicación eliminada correctamente");
+        return ResponseEntity.ok("Eliminada");
     }
 }

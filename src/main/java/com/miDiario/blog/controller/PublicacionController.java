@@ -1,12 +1,12 @@
 package com.miDiario.blog.controller;
 
-import com.miDiario.blog.model.Publicacion;
 import com.miDiario.blog.service.PublicacionService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/publicaciones")
@@ -20,40 +20,42 @@ public class PublicacionController {
 
     @PostMapping("/crear")
     public ResponseEntity<?> crearPublicacion(
-            @RequestBody Publicacion publicacion,
+            @RequestParam("contenido") String contenido,
+            @RequestParam(value = "archivo", required = false) MultipartFile archivo,
             HttpSession session) {
 
-        // 🔐 VALIDACIÓN DE SESIÓN
-        if (session.getAttribute("usuarioId") == null) {
-            return ResponseEntity.status(401).body("No autenticado");
+        // 1. Validamos que el usuario haya iniciado sesión
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) {
+            return ResponseEntity.status(401).body("Sesión expirada. Por favor inicia sesión de nuevo.");
         }
 
-        Long usuarioId = (Long) session.getAttribute("usuarioId");
-
-        return ResponseEntity.ok(publicacionService.crearPublicacion(publicacion, usuarioId));
+        try {
+            // 2. Llamamos al servicio para guardar
+            return ResponseEntity.ok(publicacionService.crearPublicacion(contenido, archivo, usuarioId));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Error al procesar la imagen.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/todas")
     public ResponseEntity<?> obtenerTodas(HttpSession session) {
-
-        // 🔐 VALIDACIÓN DE SESIÓN
+        // Validación de sesión opcional para leer, depende de tu gusto
         if (session.getAttribute("usuarioId") == null) {
             return ResponseEntity.status(401).body("No autenticado");
         }
-
         return ResponseEntity.ok(publicacionService.obtenerTodas());
     }
 
     @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<?> eliminar(@PathVariable Long id, HttpSession session) {
-
-        // 🔐 VALIDACIÓN DE SESIÓN
-        if (session.getAttribute("usuarioId") == null) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) {
             return ResponseEntity.status(401).body("No autenticado");
         }
-
-        Long usuarioId = (Long) session.getAttribute("usuarioId");
-
         return publicacionService.eliminarPublicacion(id, usuarioId);
     }
 }

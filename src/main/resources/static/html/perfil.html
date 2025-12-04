@@ -3,46 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Perfil - Mi Diario Estudiante</title>
-
+    <title>Mi Perfil - Mi Diario</title>
     <link rel="stylesheet" href="../css/perfil.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
-
 <body>
 
-<script>
-    window.addEventListener("load", () => {
-        document.body.classList.add("page-loaded");
-    });
-</script>
+<div class="main-container">
+    <div class="profile-card">
 
-<div class="perfil-container">
-    <h2>Mi Perfil</h2>
+        <div class="profile-header">
+            <div style="position: relative; display: inline-block; cursor: pointer;" onclick="document.getElementById('fileInput').click()">
+                <img id="avatarImg" src="" alt="Avatar" class="avatar" style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%;">
 
-    <div class="perfil-dato">
-        <span class="label">Nombre:</span>
-        <span id="perfilNombre"></span>
+                <span style="position: absolute; bottom: 5px; right: 5px; background: #4F46E5; color: white; padding: 6px; border-radius: 50%; border: 2px solid white; font-size: 14px;">📷</span>
+            </div>
+
+            <input type="file" id="fileInput" style="display: none;" accept="image/*">
+
+            <h2 id="headerNombre">Cargando...</h2>
+            <p class="rol-badge" id="rolBadge">Estudiante</p>
+        </div>
+        <form id="perfilForm">
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Nombre completo ✏️</label>
+                    <input type="text" id="nombre" required class="enabled-input">
+                </div>
+
+                <div class="input-group">
+                    <label>Género</label>
+                    <input type="text" id="genero" disabled class="disabled-input">
+                </div>
+
+                <div class="input-group full-width">
+                    <label for="nombreUsuario">Nombre de Usuario ✏️</label>
+                    <input type="text" id="nombreUsuario" required placeholder="Tu nick">
+                </div>
+
+                <div class="input-group full-width">
+                    <label for="email">Correo Electrónico ✏️</label>
+                    <input type="email" id="email" required placeholder="correo@ejemplo.com">
+                </div>
+            </div>
+
+            <div class="actions">
+                <button type="button" id="volverBtn" class="btn-secondary">Volver al Muro</button>
+                <button type="submit" id="guardarBtn" class="btn-primary">Guardar Cambios</button>
+            </div>
+        </form>
     </div>
-
-    <div class="perfil-dato">
-        <span class="label">Usuario:</span>
-        <span id="perfilUsuario"></span>
-    </div>
-
-    <div class="perfil-dato">
-        <span class="label">Correo:</span>
-        <span id="perfilCorreo"></span>
-    </div>
-
-    <div class="perfil-dato">
-        <span class="label">Género:</span>
-        <span id="perfilGenero"></span>
-    </div>
-
-    <button id="volverMuro">Volver al muro</button>
 </div>
 
-<script src="../js/perfil.js?v=4"></script>
-
+<script src="../js/perfil.js"></script>
 </body>
 </html>
