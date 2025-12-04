@@ -76,9 +76,12 @@ public class UsuarioService {
         u.setNombre(dto.getNombre());
         u.setNombreUsuario(dto.getNombreUsuario());
         u.setEmail(dto.getEmail());
+        u.setApellidos(dto.getApellidos()); //apellidos ya no es opcional
+
         // Campos opcionales (no vienen en el DTO)
-        u.setApellidos(null);
-        u.setGenero(null);
+
+        u.setGenero(dto.getGenero());
+
 
         // Cifrado de contraseña
         u.setPassword(encoder.encode(dto.getPassword()));
