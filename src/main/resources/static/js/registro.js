@@ -2,7 +2,8 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("registro.js cargado");
 
-    const form = document.querySelector(".form-box form");
+    const form = document.getElementById("registroForm");
+
     if (!form) {
         console.error("❌ No se encontró el formulario de registro");
         return;
@@ -23,14 +24,16 @@ document.addEventListener("DOMContentLoaded", () => {
             apellidos: apellidos.value.trim(),
             nombreUsuario: nombreUsuario.value.trim(),
             genero: genero.value,
-            correo: correo.value.trim(),
+            email: correo.value.trim(),
             password: password.value.trim()
         };
+        console.log("Payload enviado:", payload);
 
-        if (!payload.nombre || !payload.nombreUsuario || !payload.correo || !payload.password) {
+        if (!payload.nombre || !payload.nombreUsuario || !payload.email || !payload.password) {
             alert("Rellena al menos nombre, usuario, correo y contraseña");
             return;
         }
+
 
         try {
             const res = await fetch("/auth/registro", {
