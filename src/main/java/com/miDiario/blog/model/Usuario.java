@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "usuarios")
+@Table(name = "usuarios") // Tu tabla en la BD
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,7 +16,6 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Nombre visible del usuario
     @Column(nullable = false)
     private String nombre;
 
@@ -29,22 +28,23 @@ public class Usuario {
     @Column
     private String genero;
 
-    // Email mapeado a la columna `correo` de la BD
     @Column(name = "correo", nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
-    // Nº de intentos fallidos de login
     @Column(name = "intentos_fallidos", nullable = false)
     private int intentosFallidos = 0;
 
-    // Estado del usuario (activo/bloqueado)
     @Column(name = "activo", nullable = false)
     private boolean activo = true;
 
-    // Rol (USUARIO, ADMIN, TECNICO) vía tabla roles
+    // --- NUEVO CAMPO PARA LA FOTO ---
+    @Column(name = "foto_perfil", columnDefinition = "LONGTEXT")
+    private String fotoPerfil;
+    // -------------------------------
+
     @ManyToOne
     @JoinColumn(name = "rol_id")
     private Rol rol;
