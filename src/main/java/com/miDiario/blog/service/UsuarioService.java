@@ -13,6 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 public class UsuarioService {
 
@@ -68,7 +71,7 @@ public class UsuarioService {
 
         if (datosNuevos.getEmail() != null && !datosNuevos.getEmail().isEmpty()) {
             if (!datosNuevos.getEmail().equals(usuarioExistente.getEmail()) &&
-                    usuarioRepo.existsByEmail(datosNuevos.getEmail())) {
+                    usuarioRepo.existsByEmail(datosNuevos.getEmail())) {  // CAMBIADO: existsByEmail
                 throw new RuntimeException("El correo ya está registrado.");
             }
             usuarioExistente.setEmail(datosNuevos.getEmail());
@@ -84,9 +87,10 @@ public class UsuarioService {
     // REGISTRO (CÓDIGO FUSIONADO CON EL DE TU AMIGO)
     // ============================================================
     public String registrar(RegistroDTO dto) {
-        if (usuarioRepo.existsByEmail(dto.getEmail())) {
+        if (usuarioRepo.existsByEmail(dto.getEmail())) {  // CAMBIADO: existsByEmail
             return "El correo ya está registrado";
         }
+
         if (usuarioRepo.existsByNombreUsuario(dto.getNombreUsuario())) {
             return "El nombre de usuario ya está en uso";
         }
@@ -180,10 +184,15 @@ public class UsuarioService {
     // MÉTODOS AUXILIARES Y ADMIN
     // ============================================================
     public Usuario buscarPorIdentificador(String identificador) {
+        Optional<Usuario> usuarioOpt;
+
         if (identificador != null && identificador.contains("@")) {
-            return usuarioRepo.findByEmail(identificador);
+            usuarioOpt = usuarioRepo.findByEmail(identificador);  // CAMBIADO: findByEmail
+        } else {
+            usuarioOpt = usuarioRepo.findByNombreUsuario(identificador);
         }
-        return usuarioRepo.findByNombreUsuario(identificador);
+
+        return usuarioOpt.orElse(null);
     }
 
     public ResponseEntity<?> bloquear(Long adminId, Long usuarioId) {
@@ -223,5 +232,39 @@ public class UsuarioService {
         audit.setExito(exito);
         audit.setDetalles(detalles);
         auditoriaRepo.save(audit);
+    }
+
+    // ============================================================
+    // MÉTODOS NUEVOS PARA EL SISTEMA DE AMIGOS
+    // ============================================================
+
+    // Buscar usuarios para el buscador de amigos
+    public List<Usuario> buscarUsuarios(String query, Long usuarioExcluidoId) {
+        try {
+            String termino = "%" + query.toLowerCase() + "%";
+
+            // Llamar al método del repository
+            // IMPORTANTE: Asegúrate de que el método buscarPorTermino existe en UsuarioRepository
+            return usuarioRepo.buscarPorTermino(termino, usuarioExcluidoId);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al buscar usuarios: " + e.getMessage());
+        }
+    }
+
+    // Obtener usuario por ID
+    public Usuario obtenerPorId(Long id) {
+        return usuarioRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
+
+    // Método auxiliar: obtener usuario actual de la sesión
+    public Usuario obtenerUsuarioActual(HttpSession session) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) {
+            throw new RuntimeException("Usuario no autenticado");
+        }
+
+        return obtenerPorId(usuarioId);
     }
 }

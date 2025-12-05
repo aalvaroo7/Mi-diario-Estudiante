@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/usuarios")
 @CrossOrigin(origins = "*")
@@ -71,5 +73,42 @@ public class UsuarioController {
 
         Long adminId = (Long) session.getAttribute("usuarioId");
         return usuarioService.bloquear(adminId, id);
+    }
+    // ========== BUSCAR USUARIOS ==========
+    @GetMapping("/buscar")
+    public ResponseEntity<?> buscarUsuarios(
+            @RequestParam String q,
+            HttpSession session) {
+
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) {
+            return ResponseEntity.status(401).body("No autenticado");
+        }
+
+        try {
+            // Buscar usuarios por nombre, apellido o nombre de usuario
+            List<Usuario> usuarios = usuarioService.buscarUsuarios(q, usuarioId);
+            return ResponseEntity.ok(usuarios);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // ========== OBTENER USUARIO POR ID ==========
+    @GetMapping("/{id}")
+    public ResponseEntity<?> obtenerUsuarioPorId(
+            @PathVariable Long id,
+            HttpSession session) {
+
+        if (session.getAttribute("usuarioId") == null) {
+            return ResponseEntity.status(401).body("No autenticado");
+        }
+
+        try {
+            Usuario usuario = usuarioService.obtenerPorId(id);
+            return ResponseEntity.ok(usuario);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

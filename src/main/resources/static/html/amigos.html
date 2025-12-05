@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amigos - Mi Diario Estudiante</title>
+    <link rel="stylesheet" href="../css/amigos.css">
+</head>
+<body>
+<header>
+    <h1>Amigos de <span id="userName"></span></h1>
+    <div class="acciones">
+        <button id="backBtn" onclick="window.location.href='muro.html'">← Volver al Muro</button>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <!-- Buscador de amigos -->
+        <section class="section">
+            <h2>Buscar amigos</h2>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Buscar por nombre o email...">
+                <button id="searchBtn">Buscar</button>
+            </div>
+            <div id="searchResults" class="list-container">
+                <!-- Resultados aparecerán aquí -->
+                <div class="empty-message">Escribe en el buscador para encontrar amigos</div>
+            </div>
+        </section>
+
+        <!-- Solicitudes pendientes -->
+        <section class="section">
+            <h2>Solicitudes de amistad</h2>
+            <div id="friendRequests" class="list-container">
+                <!-- Solicitudes aparecerán aquí -->
+                <div class="empty-message">No tienes solicitudes pendientes</div>
+            </div>
+        </section>
+
+        <!-- Lista de amigos -->
+        <section class="section">
+            <h2>Mis amigos</h2>
+            <div id="friendsList" class="list-container">
+                <!-- Amigos aparecerán aquí -->
+                <div class="empty-message">Aún no tienes amigos. ¡Busca y agrega algunos!</div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<script src="../js/amigos.js"></script>
+</body>
+</html>
