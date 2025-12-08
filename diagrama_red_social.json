@@ -1,0 +1,66 @@
+{
+  "project": "Red Social - Diario Personal",
+  "version": "1.0",
+  "type": "architecture_diagram",
+  "elements": {
+    "actors": [
+      { "id": "ACT_01", "label": "Usuario Estándar", "type": "user" },
+      { "id": "ACT_02", "label": "Administrador", "type": "admin" },
+      { "id": "ACT_03", "label": "Técnico", "type": "technical" }
+    ],
+    "modules": [
+      {
+        "id": "MOD_AUTH",
+        "label": "Autenticación y Cuenta",
+        "features": [
+          { "id": "UC_01", "label": "Registro e Inicio de Sesión" },
+          { "id": "UC_02", "label": "Recuperación de Contraseña" },
+          { "id": "UC_03", "label": "Perfil y Foto de Usuario" }
+        ]
+      },
+      {
+        "id": "MOD_DIARY",
+        "label": "Diario y Contenido",
+        "features": [
+          { "id": "UC_04", "label": "CRUD Publicaciones (Crear, Editar, Borrar)" },
+          { "id": "UC_05", "label": "Configuración de Privacidad" },
+          { "id": "UC_06", "label": "Búsqueda (Usuarios/Posts)" }
+        ]
+      },
+      {
+        "id": "MOD_SOCIAL",
+        "label": "Interacción Social",
+        "features": [
+          { "id": "UC_07", "label": "Sistema de Amistad" },
+          { "id": "UC_08", "label": "Comentarios y Likes" },
+          { "id": "UC_09", "label": "Mensajería Privada" },
+          { "id": "UC_10", "label": "Notificaciones Automáticas" }
+        ]
+      },
+      {
+        "id": "MOD_ADMIN",
+        "label": "Administración y Mantenimiento",
+        "features": [
+          { "id": "UC_11", "label": "Moderación (Bloqueo y Eliminación)" },
+          { "id": "UC_12", "label": "Modo Mantenimiento" }
+        ]
+      }
+    ]
+  },
+  "flows": [
+    { "source": "ACT_01", "target": "UC_01", "action": "Accede" },
+    { "source": "ACT_01", "target": "UC_02", "action": "Solicita" },
+    { "source": "ACT_01", "target": "UC_03", "action": "Gestiona" },
+    { "source": "ACT_01", "target": "UC_04", "action": "Publica" },
+    { "source": "ACT_01", "target": "UC_05", "action": "Configura" },
+    { "source": "ACT_01", "target": "UC_06", "action": "Busca" },
+    { "source": "ACT_01", "target": "UC_07", "action": "Conecta" },
+    { "source": "ACT_01", "target": "UC_08", "action": "Interactúa" },
+    { "source": "ACT_01", "target": "UC_09", "action": "Chatea" },
+    { "source": "ACT_02", "target": "UC_01", "action": "Accede" },
+    { "source": "ACT_02", "target": "UC_11", "action": "Modera" },
+    { "source": "ACT_02", "target": "UC_04", "action": "Supervisa" },
+    { "source": "ACT_03", "target": "UC_01", "action": "Accede" },
+    { "source": "ACT_03", "target": "UC_12", "action": "Mantiene" }
+  ]
+}
